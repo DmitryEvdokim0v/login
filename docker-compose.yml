@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  nginx:
+    container_name: login-nginx
+    image: nginx:1.22.1-alpine3.17-slim
+    restart: always
+    tty: true
+    volumes:
+      - ../login:/var/www/login
+      - ./nginx/:/etc/nginx/conf.d/
+    ports:
+      - '80:80'
+    networks:
+      - login
+  php:
+    container_name: login-php
+    build: ./php
+    image: php:8.2.12-fpm-alpine3.18
+    restart: always
+    tty: true
+    volumes:
+      - ../login:/var/www/login
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - login
+  mysql:
+      container_name: login-mysql
+      image: mysql/mysql-server:8.0
+      restart: always
+      tty: true
+      environment:
+        MYSQL_DATABASE: login
+        MYSQL_USER: root
+        MYSQL_PASSWORD: root
+        MYSQL_ROOT_PASSWORD: root
+      volumes:
+        - login-mysql:/var/lib/mysql
+      ports:
+        - '3306:3306'
+      networks:
+        - login
+volumes:
+  mysql:
+  redis:
+  login-mysql:
+networks:
+  login:
